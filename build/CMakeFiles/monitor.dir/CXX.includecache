@@ -55,8 +55,6 @@ dirent.h
 -
 unistd.h
 -
-algorithm
--
 string
 -
 vector
