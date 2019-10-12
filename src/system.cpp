@@ -3,11 +3,9 @@
 #include <set>
 #include <string>
 #include <vector>
-
 #include "process.h"
 #include "processor.h"
 #include "system.h"
-#include "map"
 #include "linux_parser.h"
 
 using std::set;
@@ -17,36 +15,27 @@ using std::vector;
 
 // TODO: Return the system's CPU
 Processor& System::Cpu() { return cpu_; }
-
-// sort processes according to CPU usage 
-vector<int> System::sortPid(vector<int> pids) {
-    std::map<int, int, std::greater <int> > pid_map;
-    std::vector<int> sort_pid;
-    int pids_size= pids.size();
-
-    for (auto i = 0; i<pids_size; i++)
-        pid_map.insert(std::make_pair(LinuxParser::ActiveJiffies(pids[i]), pids[i]));
-        std::map<int,int> :: iterator it; 
-        for (it = pid_map.begin(); it != pid_map.end() ; it++){ 
-            //cout << "(" << (*it).first << ", " << (*it).second << ")" << endl;
-            sort_pid.push_back((*it).second);
-        }
-    return sort_pid;
-}
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { 
-    vector<int> pids = LinuxParser::Pids();
-    int pids_size= pids.size();
-    vector<int> pids_sort;
-    for (int i = 0; i < pids_size; i++)
-        pids_sort.push_back(pids[i]);
-    
-    vector<int> pids_sorted = System::sortPid(pids_sort);
+// Reference David solution
+vector<Process>& System::Processes() {
+    vector<int> pids{LinuxParser::Pids()};
+    set<int> extant_pids;
+    for (Process const& process : processes_) {
+        extant_pids.insert(process.Pid());
+    }
 
-    for (int j = 0; j < pids_size; j++)
-        processes_.emplace_back(pids_sorted[j]);
+    for (int pid : pids) {
+        if (extant_pids.find(pid) == extant_pids.end())
+            processes_.emplace_back(pid);
+    }
 
-    return processes_; 
+    for (auto& process : processes_) {
+        process.CpuUtilization(LinuxParser::ActiveJiffies(process.Pid()),
+                            LinuxParser::Jiffies());
+    }
+
+    std::sort(processes_.begin(), processes_.end(), std::greater<Process>());
+    return processes_;
 }
 
 // TODO: Return the system's kernel identifier (string)

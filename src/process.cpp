@@ -34,13 +34,18 @@ string Process::Command() { return LinuxParser::Command(Pid()); }
 string Process::Ram() { return LinuxParser::Ram(Pid()); }
 
 // TODO: Return the user (name) that generated this process
-string Process::User() { return LinuxParser::User(Pid());}
+string Process::User() { return LinuxParser::User(Pid()); }
 
 // TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return LinuxParser::UpTime(Pid());; }
+long int Process::UpTime() { return LinuxParser::UpTime(Pid()); }
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
 bool Process::operator<(Process const & a) const {
   return CpuUtilization() < a.CpuUtilization();
 }
+
+bool Process::operator>(Process const & a) const {
+  return CpuUtilization() > a.CpuUtilization();
+}
+
